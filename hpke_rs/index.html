@@ -36,6 +36,11 @@
 <h2 id="crypto-backends"><a class="doc-anchor" href="#crypto-backends">§</a>Crypto Backends</h2>
 <p>This crate does not implement the cryptographic primitives itself.
 Instead it expects an implementation of the <a href="https://docs.rs/hpke-rs-crypto">HpkeCrypto</a> trait.</p>
+<p>Two backends are provided in this repository</p>
+<ul>
+<li><a href="https://github.com/cryspen/hpke-rs/tree/main/libcrux_provider">libcrux backend</a>: a formally verified crypto backend but with limited ciphersuite support for now</li>
+<li><a href="https://github.com/cryspen/hpke-rs/tree/main/rust_crypto_provider">RustCrypto backend</a>: a backend using well established crypto implementations</li>
+</ul>
 </div></details><h2 id="modules" class="section-header">Modules<a href="#modules" class="anchor">§</a></h2><dl class="item-table"><dt><a class="mod" href="prelude/index.html" title="mod hpke_rs::prelude">prelude</a></dt><dd>Prelude for HPKE.
 Include this to get access to all the public functions of HPKE.</dd><dt><a class="mod" href="test_util/index.html" title="mod hpke_rs::test_util">test_<wbr>util</a></dt><dd>Test util module. Should be moved really.</dd></dl><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><dl class="item-table"><dt><a class="struct" href="struct.Context.html" title="struct hpke_rs::Context">Context</a></dt><dd>The HPKE context.
 Note that the RFC currently doesn’t define this.
