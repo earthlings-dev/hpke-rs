@@ -1,9 +1,9 @@
-use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
-use hpke_rs_crypto::{types::*, HpkeCrypto};
+use criterion::{BatchSize, Criterion, criterion_group, criterion_main};
+use hpke_rs_crypto::{HpkeCrypto, types::*};
 use hpke_rs_rust_crypto::*;
 
 fn criterion_benchmark(c: &mut Criterion) {
-    c.bench_function(&format!("x25519 Derive"), |b| {
+    c.bench_function("x25519 Derive", |b| {
         b.iter_batched(
             || {
                 let (pk, sk) = HpkeRustCrypto::kem_key_gen(
@@ -19,7 +19,7 @@ fn criterion_benchmark(c: &mut Criterion) {
             BatchSize::SmallInput,
         )
     });
-    c.bench_function(&format!("x25519 Derive Base"), |b| {
+    c.bench_function("x25519 Derive Base", |b| {
         b.iter_batched(
             || {
                 let (_pk, sk) = HpkeRustCrypto::kem_key_gen(

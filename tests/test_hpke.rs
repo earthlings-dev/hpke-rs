@@ -4,8 +4,8 @@ extern crate hpke_rs as hpke;
 
 use hpke::prelude::*;
 use hpke_rs_crypto::{
-    types::{AeadAlgorithm, KdfAlgorithm, KemAlgorithm},
     HpkeCrypto, RngCore,
+    types::{AeadAlgorithm, KdfAlgorithm, KemAlgorithm},
 };
 use hpke_rs_libcrux::HpkeLibcrux;
 use hpke_rs_rust_crypto::HpkeRustCrypto;

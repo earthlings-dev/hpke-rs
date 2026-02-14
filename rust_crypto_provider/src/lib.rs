@@ -8,21 +8,21 @@ use core::fmt::Display;
 use zeroize::Zeroize;
 
 use hpke_rs_crypto::{
+    HpkeCrypto, HpkeTestRng,
     error::Error,
     types::{AeadAlgorithm, KdfAlgorithm, KemAlgorithm},
-    CryptoRng, HpkeCrypto, HpkeTestRng, RngCore,
 };
 use p256::{
-    elliptic_curve::ecdh::diffie_hellman as p256diffie_hellman, PublicKey as p256PublicKey,
-    SecretKey as p256SecretKey,
+    PublicKey as p256PublicKey, SecretKey as p256SecretKey,
+    elliptic_curve::{Generate, ecdh::diffie_hellman as p256diffie_hellman},
 };
 
 use k256::{
-    elliptic_curve::{ecdh::diffie_hellman as k256diffie_hellman, sec1::ToEncodedPoint},
     PublicKey as k256PublicKey, SecretKey as k256SecretKey,
+    elliptic_curve::{ecdh::diffie_hellman as k256diffie_hellman, sec1::ToSec1Point},
 };
 
-use rand_core::SeedableRng;
+use rand_core::{Rng, SeedableRng, UnwrapErr};
 use x25519_dalek::{PublicKey as X25519PublicKey, StaticSecret as X25519StaticSecret};
 
 mod aead;
@@ -121,10 +121,7 @@ impl HpkeCrypto for HpkeRustCrypto {
         }
     }
 
-    fn kem_key_gen_derand(
-        alg: KemAlgorithm,
-        seed: &[u8],
-    ) -> Result<(Vec<u8>, Vec<u8>), Error> {
+    fn kem_key_gen_derand(alg: KemAlgorithm, seed: &[u8]) -> Result<(Vec<u8>, Vec<u8>), Error> {
         pq_kem::kem_key_gen_derand(alg, seed)
     }
 
@@ -136,11 +133,7 @@ impl HpkeCrypto for HpkeRustCrypto {
         pq_kem::kem_encaps(alg, pk_r, prng)
     }
 
-    fn kem_decaps(
-        alg: KemAlgorithm,
-        ct: &[u8],
-        sk_r: &[u8],
-    ) -> Result<Vec<u8>, Error> {
+    fn kem_decaps(alg: KemAlgorithm, ct: &[u8], sk_r: &[u8]) -> Result<Vec<u8>, Error> {
         pq_kem::kem_decaps(alg, ct, sk_r)
     }
 
@@ -157,11 +150,11 @@ impl HpkeCrypto for HpkeRustCrypto {
             }
             KemAlgorithm::DhKemP256 => {
                 let sk = p256SecretKey::from_slice(sk).map_err(|_| Error::KemInvalidSecretKey)?;
-                Ok(sk.public_key().to_encoded_point(false).as_bytes().into())
+                Ok(sk.public_key().to_sec1_point(false).as_bytes().into())
             }
             KemAlgorithm::DhKemK256 => {
                 let sk = k256SecretKey::from_slice(sk).map_err(|_| Error::KemInvalidSecretKey)?;
-                Ok(sk.public_key().to_encoded_point(false).as_bytes().into())
+                Ok(sk.public_key().to_sec1_point(false).as_bytes().into())
             }
             _ => Err(Error::UnsupportedKemOperation),
         }
@@ -181,15 +174,15 @@ impl HpkeCrypto for HpkeRustCrypto {
             }
             KemAlgorithm::DhKemP256 => {
                 let rng = &mut prng.rng;
-                let sk = p256SecretKey::random(&mut *rng);
-                let pk = sk.public_key().to_encoded_point(false).as_bytes().into();
+                let sk = p256SecretKey::generate_from_rng(&mut *rng);
+                let pk = sk.public_key().to_sec1_point(false).as_bytes().into();
                 let sk = sk.to_bytes().as_slice().into();
                 Ok((pk, sk))
             }
             KemAlgorithm::DhKemK256 => {
                 let rng = &mut prng.rng;
-                let sk = k256SecretKey::random(&mut *rng);
-                let pk = sk.public_key().to_encoded_point(false).as_bytes().into();
+                let sk = k256SecretKey::generate_from_rng(&mut *rng);
+                let pk = sk.public_key().to_sec1_point(false).as_bytes().into();
                 let sk = sk.to_bytes().as_slice().into();
                 Ok((pk, sk))
             }
@@ -197,9 +190,7 @@ impl HpkeCrypto for HpkeRustCrypto {
             KemAlgorithm::XWingDraft06
             | KemAlgorithm::XWingDraft06Obsolete
             | KemAlgorithm::MlKem768
-            | KemAlgorithm::MlKem1024 => {
-                pq_kem::kem_key_gen(alg, prng)
-            }
+            | KemAlgorithm::MlKem1024 => pq_kem::kem_key_gen(alg, prng),
             _ => Err(Error::UnknownKemAlgorithm),
         }
     }
@@ -252,15 +243,16 @@ impl HpkeCrypto for HpkeRustCrypto {
         #[cfg(feature = "deterministic-prng")]
         {
             let mut fake_rng = alloc::vec![0u8; 256];
-            rand_chacha::ChaCha20Rng::from_entropy().fill_bytes(&mut fake_rng);
+            rand_chacha::ChaCha20Rng::from_rng(&mut UnwrapErr(getrandom::SysRng))
+                .fill_bytes(&mut fake_rng);
             HpkeRustCryptoPrng {
                 fake_rng,
-                rng: rand_chacha::ChaCha20Rng::from_entropy(),
+                rng: rand_chacha::ChaCha20Rng::from_rng(&mut UnwrapErr(getrandom::SysRng)),
             }
         }
         #[cfg(not(feature = "deterministic-prng"))]
         HpkeRustCryptoPrng {
-            rng: rand_chacha::ChaCha20Rng::from_entropy(),
+            rng: rand_chacha::ChaCha20Rng::from_rng(&mut UnwrapErr(getrandom::SysRng)),
         }
     }
 
@@ -293,52 +285,10 @@ impl HpkeCrypto for HpkeRustCrypto {
     }
 }
 
-// We need to implement the old and new traits here because the crytpo uses the
-// old one.
-
-impl rand_old::RngCore for HpkeRustCryptoPrng {
-    fn next_u32(&mut self) -> u32 {
-        self.rng.next_u32()
-    }
-
-    fn next_u64(&mut self) -> u64 {
-        self.rng.next_u64()
-    }
-
-    fn fill_bytes(&mut self, dest: &mut [u8]) {
-        self.rng.fill_bytes(dest);
-    }
-
-    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand_core::Error> {
-        self.rng.try_fill_bytes(dest)
-    }
-}
-
-impl rand_old::CryptoRng for HpkeRustCryptoPrng {}
-
-use rand_old::RngCore as _;
-
-impl RngCore for HpkeRustCryptoPrng {
-    fn next_u32(&mut self) -> u32 {
-        self.rng.next_u32()
-    }
-
-    fn next_u64(&mut self) -> u64 {
-        self.rng.next_u64()
-    }
-
-    fn fill_bytes(&mut self, dest: &mut [u8]) {
-        self.rng.fill_bytes(dest);
-    }
-}
-
-impl CryptoRng for HpkeRustCryptoPrng {}
-
-// Implement rand_core 0.10 traits for compatibility with x-wing and ml-kem
-// crates which depend on rand_core 0.10.
-// The blanket impls in rand_core 0.10 automatically provide `Rng` (from
-// `TryRng<Error = Infallible>`) and `CryptoRng` (from `TryCryptoRng`).
-impl rand_core_new::TryRng for HpkeRustCryptoPrng {
+// Implement rand_core TryRng with Infallible error.
+// The blanket impls in rand_core automatically provide `Rng`, `RngCore`,
+// `CryptoRng` from `TryRng<Error = Infallible>` + `TryCryptoRng`.
+impl rand_core::TryRng for HpkeRustCryptoPrng {
     type Error = core::convert::Infallible;
 
     fn try_next_u32(&mut self) -> Result<u32, Self::Error> {
@@ -349,23 +299,22 @@ impl rand_core_new::TryRng for HpkeRustCryptoPrng {
         Ok(self.rng.next_u64())
     }
 
-    fn try_fill_bytes(
-        &mut self,
-        dst: &mut [u8],
-    ) -> Result<(), Self::Error> {
+    fn try_fill_bytes(&mut self, dst: &mut [u8]) -> Result<(), Self::Error> {
         self.rng.fill_bytes(dst);
         Ok(())
     }
 }
 
-impl rand_core_new::TryCryptoRng for HpkeRustCryptoPrng {}
+impl rand_core::TryCryptoRng for HpkeRustCryptoPrng {}
 
 impl HpkeTestRng for HpkeRustCryptoPrng {
+    type Error = Error;
+
     #[cfg(feature = "deterministic-prng")]
-    fn try_fill_test_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand_old::Error> {
+    fn try_fill_test_bytes(&mut self, dest: &mut [u8]) -> Result<(), Error> {
         // Here we fake our randomness for testing.
         if dest.len() > self.fake_rng.len() {
-            return Err(rand_core::Error::new(Error::InsufficientRandomness));
+            return Err(Error::InsufficientRandomness);
         }
         dest.clone_from_slice(&self.fake_rng.split_off(self.fake_rng.len() - dest.len()));
         Ok(())
@@ -375,15 +324,16 @@ impl HpkeTestRng for HpkeRustCryptoPrng {
     fn seed(&mut self, seed: &[u8]) {
         self.fake_rng = seed.to_vec();
     }
+
     #[cfg(not(feature = "deterministic-prng"))]
-    fn try_fill_test_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand_old::Error> {
-        self.rng.try_fill_bytes(dest)
+    fn try_fill_test_bytes(&mut self, dest: &mut [u8]) -> Result<(), Error> {
+        use rand_core::Rng;
+        self.fill_bytes(dest);
+        Ok(())
     }
 
     #[cfg(not(feature = "deterministic-prng"))]
     fn seed(&mut self, _: &[u8]) {}
-
-    type Error = rand_old::Error;
 }
 
 impl Display for HpkeRustCrypto {

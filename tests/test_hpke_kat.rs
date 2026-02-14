@@ -10,7 +10,7 @@ use std::time::Instant;
 
 use hpke::prelude::*;
 use hpke::test_util::{hex_to_bytes, hex_to_bytes_option, vec_to_option_slice};
-use hpke_rs_crypto::{types::*, HpkeCrypto};
+use hpke_rs_crypto::{HpkeCrypto, types::*};
 use hpke_rs_libcrux::HpkeLibcrux;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

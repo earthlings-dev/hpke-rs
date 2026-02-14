@@ -1,9 +1,9 @@
 use alloc::{vec, vec::Vec};
 
-use hpke_rs_crypto::{error::Error, types::KemAlgorithm, HpkeCrypto, RngCore};
+use hpke_rs_crypto::{HpkeCrypto, RngCore, error::Error, types::KemAlgorithm};
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
-use crate::{dh_kem, util, Hpke};
+use crate::{Hpke, dh_kem, util};
 
 /// A KEM private key wrapper.
 #[derive(Zeroize, ZeroizeOnDrop)]

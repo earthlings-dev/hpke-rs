@@ -7,12 +7,12 @@ use core::fmt::Display;
 use zeroize::Zeroize;
 
 use hpke_rs_crypto::{
+    HpkeCrypto, HpkeTestRng,
     error::Error,
     types::{AeadAlgorithm, KdfAlgorithm, KemAlgorithm},
-    CryptoRng, HpkeCrypto, HpkeTestRng,
 };
 
-use rand::{rngs::SysRng, Rng, SeedableRng};
+use rand::{Rng, SeedableRng, rngs::SysRng};
 use rand_core::UnwrapErr;
 
 /// The Libcrux HPKE Provider
@@ -138,7 +138,7 @@ impl HpkeCrypto for HpkeLibcrux {
 
     fn dh_validate_sk(alg: KemAlgorithm, sk: &[u8]) -> Result<Vec<u8>, Error> {
         match alg {
-            KemAlgorithm::DhKemP256 => libcrux_ecdh::p256::validate_scalar_slice(&sk)
+            KemAlgorithm::DhKemP256 => libcrux_ecdh::p256::validate_scalar_slice(sk)
                 .map_err(|e| Error::CryptoLibraryError(format!("ECDH invalid sk error: {:?}", e)))
                 .map(|sk| sk.0.to_vec()),
             _ => Err(Error::UnknownKemAlgorithm),
@@ -328,21 +328,24 @@ fn aead_alg(alg_type: AeadAlgorithm) -> Result<libcrux_aead::Aead, Error> {
     }
 }
 
-impl hpke_rs_crypto::RngCore for HpkeLibcruxPrng {
-    fn next_u32(&mut self) -> u32 {
-        self.rng.next_u32()
+impl rand_core::TryRng for HpkeLibcruxPrng {
+    type Error = core::convert::Infallible;
+
+    fn try_next_u32(&mut self) -> Result<u32, Self::Error> {
+        Ok(self.rng.next_u32())
     }
 
-    fn next_u64(&mut self) -> u64 {
-        self.rng.next_u64()
+    fn try_next_u64(&mut self) -> Result<u64, Self::Error> {
+        Ok(self.rng.next_u64())
     }
 
-    fn fill_bytes(&mut self, dest: &mut [u8]) {
-        self.rng.fill_bytes(dest)
+    fn try_fill_bytes(&mut self, dst: &mut [u8]) -> Result<(), Self::Error> {
+        self.rng.fill_bytes(dst);
+        Ok(())
     }
 }
 
-impl CryptoRng for HpkeLibcruxPrng {}
+impl rand_core::TryCryptoRng for HpkeLibcruxPrng {}
 
 impl HpkeTestRng for HpkeLibcruxPrng {
     type Error = Error;
@@ -359,8 +362,7 @@ impl HpkeTestRng for HpkeLibcruxPrng {
 
     #[cfg(not(feature = "deterministic-prng"))]
     fn try_fill_test_bytes(&mut self, dest: &mut [u8]) -> Result<(), Error> {
-        use hpke_rs_crypto::RngCore;
-
+        use rand_core::Rng;
         self.fill_bytes(dest);
         Ok(())
     }

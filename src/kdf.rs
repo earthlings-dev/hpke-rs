@@ -1,6 +1,6 @@
 use alloc::vec::Vec;
 
-use hpke_rs_crypto::{error::Error, types::KdfAlgorithm, HpkeCrypto};
+use hpke_rs_crypto::{HpkeCrypto, error::Error, types::KdfAlgorithm};
 
 use crate::util::concat;
 

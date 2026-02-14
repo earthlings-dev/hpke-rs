@@ -14,15 +14,15 @@ use types::{AeadAlgorithm, KemAlgorithm};
 pub mod error;
 pub mod types;
 
-// re-export trait
-pub use rand_core::{CryptoRng, RngCore};
+// re-export traits
+pub use rand_core::{CryptoRng, Rng, Rng as RngCore};
 use zeroize::Zeroize;
 
 /// The [`HpkeCrypto`] trait defines the necessary cryptographic functions used
 /// in the HPKE implementation.
 pub trait HpkeCrypto: core::fmt::Debug + Send + Sync {
     /// The PRNG implementation returned in [`HpkeCrypto::prng()`].
-    type HpkePrng: RngCore + CryptoRng + HpkeTestRng + Zeroize;
+    type HpkePrng: Rng + CryptoRng + HpkeTestRng + Zeroize;
 
     /// The name of the implementation.
     fn name() -> String;
@@ -148,9 +148,9 @@ pub trait HpkeCrypto: core::fmt::Debug + Send + Sync {
 
 /// PRNG extension for testing that is supposed to return pre-configured bytes.
 pub trait HpkeTestRng {
-    // Error type to replace rand::Error (which is no longer available as of version 0.9)
+    /// Error type for test PRNG operations.
     type Error: core::fmt::Debug + core::fmt::Display;
-    /// Like [`TryRngCore::try_fill_bytes`] but the result is expected to be known.
+    /// Like [`TryRng::try_fill_bytes`] but the result is expected to be known.
     fn try_fill_test_bytes(&mut self, dest: &mut [u8]) -> Result<(), Self::Error>;
 
     /// Set the randomness state of this test PRNG.

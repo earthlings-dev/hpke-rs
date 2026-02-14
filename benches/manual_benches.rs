@@ -2,8 +2,8 @@ use std::time::{Duration, Instant};
 
 use hpke_rs::{prelude::*, test_util::hex_to_bytes};
 use hpke_rs_crypto::{
-    types::{AeadAlgorithm, KdfAlgorithm, KemAlgorithm},
     HpkeCrypto,
+    types::{AeadAlgorithm, KdfAlgorithm, KemAlgorithm},
 };
 use hpke_rs_libcrux::HpkeLibcrux;
 use hpke_rs_rust_crypto::*;

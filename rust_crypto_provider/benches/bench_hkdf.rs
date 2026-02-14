@@ -1,9 +1,9 @@
-use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
-use hpke_rs_crypto::{types::*, HpkeCrypto, RngCore};
+use criterion::{BatchSize, Criterion, criterion_group, criterion_main};
+use hpke_rs_crypto::{HpkeCrypto, RngCore, types::*};
 use hpke_rs_rust_crypto::*;
 
 fn criterion_benchmark(c: &mut Criterion) {
-    c.bench_function(&format!("HKDF SHA256 Extract"), |b| {
+    c.bench_function("HKDF SHA256 Extract", |b| {
         b.iter_batched(
             || {
                 let mut salt = vec![0u8; 77];
@@ -18,7 +18,7 @@ fn criterion_benchmark(c: &mut Criterion) {
             BatchSize::SmallInput,
         )
     });
-    c.bench_function(&format!("HKDF SHA256 Expand"), |b| {
+    c.bench_function("HKDF SHA256 Expand", |b| {
         b.iter_batched(
             || {
                 let mut info = vec![0u8; 77];

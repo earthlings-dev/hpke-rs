@@ -1,9 +1,9 @@
-use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
-use hpke_rs_crypto::{types::KemAlgorithm, HpkeCrypto};
+use criterion::{BatchSize, Criterion, criterion_group, criterion_main};
+use hpke_rs_crypto::{HpkeCrypto, types::KemAlgorithm};
 use hpke_rs_libcrux::*;
 
 fn criterion_benchmark(c: &mut Criterion) {
-    c.bench_function(&format!("P256 Derive"), |b| {
+    c.bench_function("P256 Derive", |b| {
         b.iter_batched(
             || {
                 let (pk, sk) =
@@ -17,7 +17,7 @@ fn criterion_benchmark(c: &mut Criterion) {
             BatchSize::SmallInput,
         )
     });
-    c.bench_function(&format!("P256 Derive Base"), |b| {
+    c.bench_function("P256 Derive Base", |b| {
         b.iter_batched(
             || {
                 let (_pk, sk) =

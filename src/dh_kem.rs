@@ -2,7 +2,7 @@
 
 use alloc::{string::ToString, vec::Vec};
 
-use hpke_rs_crypto::{error::Error, types::KemAlgorithm, HpkeCrypto};
+use hpke_rs_crypto::{HpkeCrypto, error::Error, types::KemAlgorithm};
 
 use crate::util::*;
 use crate::{
@@ -80,10 +80,10 @@ pub(super) fn derive_key_pair<Crypto: HpkeCrypto>(
                     &ctr.to_be_bytes(),
                     alg.private_key_len(),
                 );
-                if let Ok(sk) = &candidate {
-                    if let Ok(sk) = Crypto::dh_validate_sk(alg, sk) {
-                        break PrivateKey(sk);
-                    }
+                if let Ok(sk) = &candidate
+                    && let Ok(sk) = Crypto::dh_validate_sk(alg, sk)
+                {
+                    break PrivateKey(sk);
                 }
                 if ctr == u8::MAX {
                     // If we get here we lost. This should never happen.

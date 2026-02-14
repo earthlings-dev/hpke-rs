@@ -2,7 +2,8 @@
 name = "hpke-rs"
 version = "0.6.0"
 authors = ["Franziskus Kiefer <franziskuskiefer@gmail.com>"]
-edition = "2021"
+edition.workspace = true
+rust-version.workspace = true
 license = "MPL-2.0"
 documentation = "https://docs.rs/hpke-rs"
 description = "HPKE Implementation"
@@ -13,22 +14,75 @@ exclude = ["/tests"]
 [workspace]
 members = ["traits", "libcrux_provider", "rust_crypto_provider", "."]
 
-[dependencies]
-log = "0.4"
-serde = { version = "1.0", features = ["derive"], optional = true }
-tls_codec = { version = "0.4.2", features = ["derive"], optional = true }
-subtle = { version = "2.6", default-features = false }
-zeroize = { version = "1.5", features = ["zeroize_derive"] }
+[workspace.package]
+edition = "2024"
+rust-version = "1.93"
+
+[workspace.dependencies]
+# Internal crates
 hpke-rs-crypto = { version = "0.6.0", path = "./traits", default-features = false }
-rand_core = { version = "0.9", default-features = false }
-libcrux-sha3 = { version = "0.0.6" }
-hpke-rs-rust-crypto = { version = "0.6.0", path = "./rust_crypto_provider", default-features = false, optional = true }
-hpke-rs-libcrux = { version = "0.6.0", path = "./libcrux_provider", default-features = false, optional = true }
+hpke-rs-rust-crypto = { version = "0.6.0", path = "./rust_crypto_provider", default-features = false }
+hpke-rs-libcrux = { version = "0.6.0", path = "./libcrux_provider", default-features = false }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tls_codec = { version = "0.4.2", features = ["derive"] }
+
+# Core crypto
+subtle = { version = "2.6", default-features = false }
+zeroize = { version = "1.8.2", features = ["zeroize_derive"] }
+
+# Randomness
+getrandom = { version = "0.4.1", default-features = false, features = ["sys_rng"] }
+rand = { version = "0.10", default-features = false, features = ["sys_rng"] }
+rand_core = { version = "0.10", default-features = false }
+rand_chacha = { version = "0.10", default-features = false }
+
+# Libcrux
+libcrux-sha3 = "0.0.7"
+libcrux-ecdh = { version = "0.0.6", default-features = false }
+libcrux-hkdf = "0.0.6"
+libcrux-kem = { version = "0.0.6", default-features = false }
+libcrux-aead = "0.0.6"
+libcrux-traits = { version = "0.0.6", default-features = false }
+
+# RustCrypto
+hkdf = "0.12"
+sha2 = { version = "0.10", default-features = false }
+p256 = { version = "0.14.0-rc.7", default-features = false, features = ["arithmetic", "ecdh"] }
+k256 = { version = "0.14.0-rc.7", default-features = false, features = ["arithmetic", "ecdh"] }
+p384 = { version = "0.14.0-rc.7", default-features = false }
+x25519-dalek = { version = "3.0.0-pre.6", features = ["static_secrets"] }
+chacha20poly1305 = { version = "0.10", default-features = false, features = ["alloc"] }
+aes-gcm = { version = "0.10", default-features = false, features = ["aes"] }
+x-wing = { version = "0.1.0-rc.0", default-features = false }
+ml-kem = { version = "0.3.0-rc.0", default-features = false }
+
+# Logging
+log = "0.4"
+
+# Dev/bench
+lazy_static = "1.5"
+rayon = "1.11"
+pretty_env_logger = "0.5"
+criterion = { version = "0.8", features = ["html_reports"] }
+
+[dependencies]
+log.workspace = true
+serde = { workspace = true, optional = true }
+tls_codec = { workspace = true, optional = true }
+subtle.workspace = true
+zeroize.workspace = true
+hpke-rs-crypto.workspace = true
+rand_core.workspace = true
+libcrux-sha3.workspace = true
+hpke-rs-rust-crypto = { workspace = true, optional = true }
+hpke-rs-libcrux = { workspace = true, optional = true }
 
 [features]
 default = []
 std = [
-    "rand_core/std",
     "hpke-rs-crypto/std",
     "hpke-rs-rust-crypto?/std",
     "hpke-rs-libcrux?/std",
@@ -37,7 +91,6 @@ serialization = ["serde", "tls_codec", "tls_codec/serde", "std"]
 hazmat = []
 rustcrypto = ["dep:hpke-rs-rust-crypto"]
 libcrux = ["dep:hpke-rs-libcrux"]
-
 hpke-test = ["std"]
 hpke-test-prng = [
     "hpke-rs-rust-crypto?/deterministic-prng",
@@ -45,17 +98,17 @@ hpke-test-prng = [
 ] # ⚠️ Enable testing PRNG - DO NOT USE
 
 [dev-dependencies]
-hpke-rs-crypto = { version = "0.6.0", path = "./traits", features = ["std"] }
-serde_json = "1.0"
-serde = { version = "1.0", features = ["derive"] }
-lazy_static = "1.4"
-rayon = "1.5"
+hpke-rs-crypto = { workspace = true, features = ["std"] }
+serde_json.workspace = true
+serde.workspace = true
+lazy_static.workspace = true
+rayon.workspace = true
 hpke-rs = { path = ".", features = ["hpke-test", "hazmat"] }
-hpke-rs-rust-crypto = { version = "0.6.0", path = "./rust_crypto_provider" }
-hpke-rs-libcrux = { version = "0.6.0", path = "./libcrux_provider" }
-rand = { version = "0.10" }
-pretty_env_logger = "0.5"
-criterion = { version = "0.8", features = ["html_reports"] }
+hpke-rs-rust-crypto.workspace = true
+hpke-rs-libcrux.workspace = true
+rand = { workspace = true, default-features = true }
+pretty_env_logger.workspace = true
+criterion.workspace = true
 
 [[bench]]
 name = "bench"
@@ -64,3 +117,46 @@ harness = false
 [[bench]]
 name = "manual_benches"
 harness = false
+
+[patch.crates-io]
+# Randomness
+rand = { git = "https://github.com/earthlings-dev/rand.git" }
+rand_core = { git = "https://github.com/earthlings-dev/rand_core.git" }
+rand_chacha = { git = "https://github.com/earthlings-dev/rngs.git" }
+getrandom = { git = "https://github.com/earthlings-dev/getrandom.git" }
+
+# Serialization
+serde = { git = "https://github.com/earthlings-dev/serde.git" }
+serde_core = { git = "https://github.com/earthlings-dev/serde.git" }
+serde_derive = { git = "https://github.com/earthlings-dev/serde.git" }
+
+# Libcrux
+libcrux-sha3 = { git = "https://github.com/earthlings-dev/libcrux.git" }
+libcrux-ecdh = { git = "https://github.com/earthlings-dev/libcrux.git" }
+libcrux-hkdf = { git = "https://github.com/earthlings-dev/libcrux.git" }
+libcrux-kem = { git = "https://github.com/earthlings-dev/libcrux.git" }
+libcrux-aead = { git = "https://github.com/earthlings-dev/libcrux.git" }
+libcrux-traits = { git = "https://github.com/earthlings-dev/libcrux.git" }
+
+# RustCrypto elliptic curves
+p256 = { git = "https://github.com/earthlings-dev/rustcrypto-elliptic-curves.git" }
+k256 = { git = "https://github.com/earthlings-dev/rustcrypto-elliptic-curves.git" }
+p384 = { git = "https://github.com/earthlings-dev/rustcrypto-elliptic-curves.git" }
+primeorder = { git = "https://github.com/earthlings-dev/rustcrypto-elliptic-curves.git" }
+
+# Curve25519/Dalek
+x25519-dalek = { git = "https://github.com/earthlings-dev/curve25519-dalek.git" }
+curve25519-dalek = { git = "https://github.com/earthlings-dev/curve25519-dalek.git" }
+
+# RustCrypto traits/primitives
+elliptic-curve = { git = "https://github.com/earthlings-dev/rustcrypto-traits.git" }
+crypto-common = { git = "https://github.com/earthlings-dev/rustcrypto-traits.git" }
+
+# RustCrypto math
+crypto-bigint = { git = "https://github.com/earthlings-dev/rustcrypto-crypto-bigint.git" }
+hybrid-array = { git = "https://github.com/earthlings-dev/hybrid-array.git" }
+rustcrypto-ff = { git = "https://github.com/earthlings-dev/rustcrypto-ff.git" }
+rustcrypto-group = { git = "https://github.com/earthlings-dev/rustcrypto-group.git" }
+
+# Misc
+rayon = { git = "https://github.com/earthlings-dev/rayon-rs.git" }

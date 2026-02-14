@@ -2,7 +2,8 @@
 name = "hpke-rs-libcrux"
 version = "0.6.0"
 authors = ["Franziskus Kiefer <franziskuskiefer@gmail.com>"]
-edition = "2021"
+edition.workspace = true
+rust-version.workspace = true
 license = "MPL-2.0"
 documentation = "https://docs.rs/hpke-rs-libcrux"
 description = "Crypto backend for HPKE using formally verified code from libcrux."
@@ -10,20 +11,20 @@ readme = "Readme.md"
 repository = "https://github.com/cryspen/hpke-rs"
 
 [dependencies]
-hpke-rs-crypto = { version = "0.6.0", path = "../traits" }
-libcrux-ecdh = { version = "0.0.6", default-features = false }
-libcrux-hkdf = { version = "0.0.6" }
-libcrux-kem = { version = "0.0.6", default-features = false }
-libcrux-aead = { version = "0.0.6" }
-libcrux-traits = { version = "0.0.6", default-features = false }
+hpke-rs-crypto.workspace = true
+libcrux-ecdh.workspace = true
+libcrux-hkdf.workspace = true
+libcrux-kem.workspace = true
+libcrux-aead.workspace = true
+libcrux-traits.workspace = true
 # Randomness
-rand = { version = "0.10", default-features = false, features = ["sys_rng"] }
-rand_core = { version = "0.10" }
-rand_chacha = { version = "0.10", default-features = false }
-zeroize = "1.8.2"
+rand.workspace = true
+rand_core.workspace = true
+rand_chacha.workspace = true
+zeroize.workspace = true
 
 [dev-dependencies]
-criterion = { version = "0.8", features = ["html_reports"] }
+criterion.workspace = true
 
 [features]
 deterministic-prng = [] # ⚠️ FOR TESTING ONLY.
