@@ -129,7 +129,7 @@ pub use hpke_rs_rust_crypto as rustcrypto;
 pub use hpke_rs_libcrux as libcrux;
 
 #[cfg(not(feature = "hpke-test-prng"))]
-use rand_core::TryRngCore;
+use rand_core::TryRng;
 
 #[cfg(feature = "serialization")]
 pub(crate) use serde::{Deserialize, Serialize};
