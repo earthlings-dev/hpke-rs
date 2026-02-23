@@ -120,43 +120,43 @@ harness = false
 
 [patch.crates-io]
 # Randomness
-rand = { git = "https://github.com/earthlings-dev/rand.git" }
-rand_core = { git = "https://github.com/earthlings-dev/rand_core.git" }
-rand_chacha = { git = "https://github.com/earthlings-dev/rngs.git" }
-getrandom = { git = "https://github.com/earthlings-dev/getrandom.git" }
+rand = { path = "../rand" }
+rand_core = { path = "../rand_core" }
+rand_chacha = { path = "../rngs/rand_chacha" }
+getrandom = { path = "../getrandom" }
 
 # Serialization
-serde = { git = "https://github.com/earthlings-dev/serde.git" }
-serde_core = { git = "https://github.com/earthlings-dev/serde.git" }
-serde_derive = { git = "https://github.com/earthlings-dev/serde.git" }
+serde = { path = "../serde/serde" }
+serde_core = { path = "../serde/serde_core" }
+serde_derive = { path = "../serde/serde_derive" }
 
 # Libcrux
-libcrux-sha3 = { git = "https://github.com/earthlings-dev/libcrux.git" }
-libcrux-ecdh = { git = "https://github.com/earthlings-dev/libcrux.git" }
-libcrux-hkdf = { git = "https://github.com/earthlings-dev/libcrux.git" }
-libcrux-kem = { git = "https://github.com/earthlings-dev/libcrux.git" }
-libcrux-aead = { git = "https://github.com/earthlings-dev/libcrux.git" }
-libcrux-traits = { git = "https://github.com/earthlings-dev/libcrux.git" }
+libcrux-sha3 = { path = "../libcrux/crates/algorithms/sha3" }
+libcrux-ecdh = { path = "../libcrux/libcrux-ecdh" }
+libcrux-hkdf = { path = "../libcrux/crates/algorithms/hkdf" }
+libcrux-kem = { path = "../libcrux/libcrux-kem" }
+libcrux-aead = { path = "../libcrux/crates/primitives/aead" }
+libcrux-traits = { path = "../libcrux/traits" }
 
 # RustCrypto elliptic curves
-p256 = { git = "https://github.com/earthlings-dev/rustcrypto-elliptic-curves.git" }
-k256 = { git = "https://github.com/earthlings-dev/rustcrypto-elliptic-curves.git" }
-p384 = { git = "https://github.com/earthlings-dev/rustcrypto-elliptic-curves.git" }
-primeorder = { git = "https://github.com/earthlings-dev/rustcrypto-elliptic-curves.git" }
+p256 = { path = "../rustcrypto-elliptic-curves/p256" }
+k256 = { path = "../rustcrypto-elliptic-curves/k256" }
+p384 = { path = "../rustcrypto-elliptic-curves/p384" }
+primeorder = { path = "../rustcrypto-elliptic-curves/primeorder" }
 
 # Curve25519/Dalek
-x25519-dalek = { git = "https://github.com/earthlings-dev/curve25519-dalek.git" }
-curve25519-dalek = { git = "https://github.com/earthlings-dev/curve25519-dalek.git" }
+x25519-dalek = { path = "../curve25519-dalek/x25519-dalek" }
+curve25519-dalek = { path = "../curve25519-dalek/curve25519-dalek" }
 
 # RustCrypto traits/primitives
-elliptic-curve = { git = "https://github.com/earthlings-dev/rustcrypto-traits.git" }
-crypto-common = { git = "https://github.com/earthlings-dev/rustcrypto-traits.git" }
+elliptic-curve = { path = "../rustcrypto-traits/elliptic-curve" }
+crypto-common = { path = "../rustcrypto-traits/crypto-common" }
 
 # RustCrypto math
-crypto-bigint = { git = "https://github.com/earthlings-dev/rustcrypto-crypto-bigint.git" }
-hybrid-array = { git = "https://github.com/earthlings-dev/hybrid-array.git" }
-rustcrypto-ff = { git = "https://github.com/earthlings-dev/rustcrypto-ff.git" }
-rustcrypto-group = { git = "https://github.com/earthlings-dev/rustcrypto-group.git" }
+crypto-bigint = { path = "../rustcrypto-crypto-bigint" }
+hybrid-array = { path = "../hybrid-array" }
+rustcrypto-ff = { path = "../rustcrypto-ff" }
+rustcrypto-group = { path = "../rustcrypto-group" }
 
 # Misc
-rayon = { git = "https://github.com/earthlings-dev/rayon-rs.git" }
+rayon = { path = "../rayon-rs" }
